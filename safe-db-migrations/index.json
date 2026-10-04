@@ -1,0 +1,99 @@
+{
+  "title": "Safe database migrations in Continuous Delivery",
+  "description": "Change the schema of a live PostgreSQL database without downtime: lint migrations in CI with squawk and rename a column with the expand/contract pattern.",
+  "details": {
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh",
+      "foreground": "foreground.sh"
+    },
+    "steps": [
+      {
+        "title": "Meet the system",
+        "text": "step1.md",
+        "verify": "verify1.sh"
+      },
+      {
+        "title": "The innocent migration",
+        "text": "step2.md",
+        "verify": "verify2.sh"
+      },
+      {
+        "title": "Put a gate in the pipeline",
+        "text": "step3.md",
+        "verify": "verify3.sh"
+      },
+      {
+        "title": "Expand: add, don't change",
+        "text": "step4.md",
+        "verify": "verify4.sh"
+      },
+      {
+        "title": "Migrate: backfill and roll out v2",
+        "text": "step5.md",
+        "verify": "verify5.sh"
+      },
+      {
+        "title": "Contract: remove what nobody uses",
+        "text": "step6.md",
+        "verify": "verify6.sh"
+      },
+      {
+        "title": "Locks: adding an index",
+        "text": "step7.md",
+        "verify": "verify7.sh"
+      },
+      {
+        "title": "Reflection: when is this worth it?",
+        "text": "step8.md"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    },
+    "assets": {
+      "host01": [
+        {
+          "file": "app.py",
+          "target": "/root/tutorial"
+        },
+        {
+          "file": "ci.sh",
+          "target": "/root/tutorial",
+          "chmod": "+x"
+        },
+        {
+          "file": "deploy.sh",
+          "target": "/root/tutorial",
+          "chmod": "+x"
+        },
+        {
+          "file": "traffic.sh",
+          "target": "/root/tutorial",
+          "chmod": "+x"
+        },
+        {
+          "file": "status.sh",
+          "target": "/root/tutorial",
+          "chmod": "+x"
+        },
+        {
+          "file": "backfill.sh",
+          "target": "/root/tutorial",
+          "chmod": "+x"
+        },
+        {
+          "file": ".squawk.toml",
+          "target": "/root/tutorial"
+        },
+        {
+          "file": "20261001000000_create_users.sql",
+          "target": "/root/tutorial"
+        }
+      ]
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu"
+  }
+}
