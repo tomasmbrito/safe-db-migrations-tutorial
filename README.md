@@ -2,11 +2,11 @@
 
 An executable tutorial for DD2482 Automated Software Testing and DevOps (KTH, 2026).
 
-**Run it in the browser:** https://killercoda.com/tomasmbrito/scenario/safe-db-migrations
+Run it in the browser: https://killercoda.com/tomasmbrito/scenario/safe-db-migrations
 
-You break a live service with a one-line schema migration, add a migration linter as a gate in a small CI/CD pipeline, and then rename the column again with the expand/contract pattern while traffic keeps flowing, without a single failed request.
+You break a running service with a one-line schema migration, add a migration linter as a check in a small CI/CD pipeline, and then do the same rename again with the expand/contract pattern while traffic keeps going, this time without any failed requests.
 
-**Tools:** PostgreSQL 16, [dbmate](https://github.com/amacneil/dbmate) (migrations), [squawk](https://squawkhq.com) (migration linter), a small Python service in two versions, and bash scripts that simulate users, a load balancer, rolling deploys and the pipeline.
+Tools: PostgreSQL 16, [dbmate](https://github.com/amacneil/dbmate) (migrations), [squawk](https://squawkhq.com) (migration linter), a small Python service in two versions, and bash scripts that simulate users, a load balancer, rolling deploys and the pipeline.
 
 ## Structure
 

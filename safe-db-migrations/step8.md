@@ -1,34 +1,36 @@
-# Reflection: when is this worth it?
+# Reflection: is it worth it?
 
-You renamed a column in **five migrations and two app deploys** instead of one line, and added a gate that sometimes says no. That is real cost, so it is worth being precise about when it pays off.
+We renamed one column with five migrations and two app deploys, instead of one line, and added a check that sometimes says no. That has a cost, so it's worth thinking about when it pays off.
 
 ## Why these tools
 
-- **dbmate** stores migrations as plain SQL with an `up` and a `down` part, and works with any language or framework. We used it because the point of the tutorial is the SQL that reaches PostgreSQL. Framework tools (Django, Rails, Alembic, Flyway, Liquibase) do the same job; in a real project you use the one that fits your stack. The patterns stay the same.
-- **squawk** is specific to PostgreSQL and understands lock levels, not only syntax. It runs as a single binary with no server and no account, so it fits in any CI job (it can also comment directly on a GitHub pull request).
-- **A separate lint stage before the deploy stage** follows the usual pipeline principle: fail fast and cheap, before anything irreversible happens.
+dbmate keeps migrations as plain SQL with an `up` and a `down` part, and it doesn't care what language the app is written in. We picked it because the point here is the SQL that actually reaches PostgreSQL. Framework tools like Django migrations, Rails, Alembic, Flyway or Liquibase do the same job, and in a real project you'd use whatever fits your stack. The patterns stay the same.
 
-## When it is useful
+squawk is made specifically for PostgreSQL and understands lock levels, not just syntax. It's a single binary, with no server and no account, so it fits in any CI job (it can even comment on a GitHub pull request).
 
-- Services that **deploy often** with rolling, blue-green or canary deployments, where two versions always overlap for a while.
-- **Large or busy tables**, where a full-table lock or rewrite means minutes of blocked requests.
-- **Teams**, where not everyone knows PostgreSQL's locking rules; the linter shares that knowledge with everyone.
-- Systems where **several services or jobs read the same database**, so "just deploy everything at once" is not even possible.
+The lint stage runs before the deploy stage for the usual pipeline reason: fail early and cheaply, before anything you can't undo.
 
-## When it is not worth it
+## When it's useful
 
-- **Small internal tools or early prototypes** where a 30-second maintenance window at night is fine. A single migration plus a short downtime is simpler and less error-prone.
-- **Tiny tables**, where every lock lasts milliseconds anyway.
-- **Data you can rebuild** (caches, analytics copies): drop and recreate.
+- Services that deploy often with rolling, blue-green or canary deployments, where two versions always overlap for a while.
+- Large or busy tables, where locking or rewriting the table means minutes of blocked requests.
+- Teams where not everyone knows PostgreSQL's locking rules. The linter shares that knowledge with everyone.
+- Databases used by several services or jobs, where deploying everything at once isn't even an option.
 
-## Limits of what you saw
+## When it's not
 
-- A linter checks **patterns, not your data**. It cannot know that a table has 500 million rows or that a column is still read by a reporting job nobody told you about. It also flags things that are fine in context, which is why the explicit `squawk-ignore` comments matter: an exception should be a visible, reviewed decision.
-- Expand/contract needs **discipline over time**: the contract step is easy to forget, and half-finished migrations (old columns, sync triggers) pile up.
-- The sync trigger costs a little on every write, and logic in triggers is easy to overlook.
-- **Rollbacks are not symmetric**: after the contract step, rolling back the code to v1 is no longer possible. Going forward with a new fix is often the only real option.
-- The lock demo was simulated with `pg_sleep`. On real data, measure: run the migration against a production-sized copy in a staging environment.
+- Small internal tools or early prototypes, where 30 seconds of downtime at night is fine. One migration plus a short maintenance window is simpler and harder to get wrong.
+- Tiny tables, where every lock only lasts a few milliseconds anyway.
+- Data you can rebuild, like caches or analytics copies. Just drop and recreate it.
 
-## Who it is for
+## Limitations
 
-Backend developers who write migrations, and the platform or DevOps engineers who own the deployment pipeline: the linter encodes the platform team's knowledge, and expand/contract is a habit the developers need.
+- A linter checks patterns, not your data. It doesn't know a table has 500 million rows, or that some reporting job nobody told you about still reads a column. It also complains about things that are fine in context, which is why the `squawk-ignore` comments matter: an exception should be visible and reviewed.
+- Expand/contract needs discipline. The contract step is easy to forget, and old columns and sync triggers pile up.
+- The trigger adds a bit of cost to every write, and logic hidden in triggers is easy to overlook.
+- Rollbacks aren't symmetric. After the contract step you can't go back to v1 anymore, so a fix usually means going forward.
+- The lock demo was faked with `pg_sleep`. With real data you should measure, for example by running the migration against a production-sized copy in staging.
+
+## Who it's for
+
+Mostly backend developers who write migrations, and the platform or DevOps people who own the pipeline. The linter is a way to put the platform team's knowledge into the pipeline, and expand/contract is a habit the developers need to pick up.
