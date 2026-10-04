@@ -1,17 +1,14 @@
 # Put a gate in the pipeline
 
-The rename is still sitting in `db/migrations/` as a pending migration. This time it goes through our pipeline, `ci.sh`:
+The rename is still in `db/migrations/` as a pending migration. This time we send it through our pipeline, `ci.sh`:
 
 ```
 cat ci.sh
 ```{{exec}}
 
-It has two stages, like a real CI/CD job:
+It has two stages, like a real CI/CD job: first it runs `squawk` on every migration that isn't applied yet, and only if that passes it runs `dbmate up`.
 
-1. **lint**: run `squawk` on every migration that is not applied yet;
-2. **deploy**: only if stage 1 passed, run `dbmate up`.
-
-squawk parses the SQL and knows which statements are dangerous on a live PostgreSQL database: which locks they take, what they block, and which ones break running clients. Its settings live in `.squawk.toml`:
+squawk parses the SQL and knows which statements are risky on a live PostgreSQL database: which locks they take, what they block and which ones break clients that are still running. Its settings are in `.squawk.toml`:
 
 ```
 cat .squawk.toml
@@ -23,15 +20,15 @@ Run the pipeline:
 ./ci.sh
 ```{{exec}}
 
-The pipeline is **blocked** and the database was never touched. Read the warnings, they are the useful part:
+The pipeline is blocked and the database wasn't touched. The warnings are worth reading:
 
-- `renaming-column`: *renaming a column may break existing clients*. This is exactly what happened in the previous step;
-- `require-lock-timeout`: the `ALTER` needs an `ACCESS EXCLUSIVE` lock, which blocks all reads and writes. If it has to wait for a long query, every request queues up behind it. A `lock_timeout` makes the migration give up quickly instead;
-- `require-statement-timeout`: the same idea for statements that run for a long time.
+- `renaming-column`: renaming a column may break existing clients. That's exactly what happened in the last step.
+- `require-lock-timeout`: the `ALTER` needs an `ACCESS EXCLUSIVE` lock, which blocks all reads and writes. If it has to wait behind a long query, every request queues up behind it too. With a `lock_timeout` the migration gives up quickly instead.
+- `require-statement-timeout`: same idea, for statements that run for a long time.
 
-Why a linter and not just code review? Reviewers know the business logic, but few know by heart which `ALTER TABLE` variants rewrite the table or take which lock. Encoding that knowledge in a check that runs on every change makes it **repeatable** and moves the feedback to the moment the migration is written, not the moment production breaks. This is "shift left" for databases.
+Why not just rely on code review? Reviewers know the business logic, but not many people know by heart which `ALTER TABLE` variants rewrite the table or which lock they take. Putting that knowledge in a check that runs on every change makes it repeatable, and you get the feedback when you write the migration instead of when production breaks. Basically "shift left", but for the database.
 
-The rename itself cannot be made safe, so delete it. The next steps do the same change in a safe way:
+There's no safe way to do the rename in one go, so delete it. The next steps make the same change safely:
 
 ```
 rm db/migrations/20261002000000_rename_name_to_full_name.sql

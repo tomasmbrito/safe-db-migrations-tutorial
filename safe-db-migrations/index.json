@@ -14,7 +14,7 @@
         "verify": "verify1.sh"
       },
       {
-        "title": "The innocent migration",
+        "title": "The harmless-looking migration",
         "text": "step2.md",
         "verify": "verify2.sh"
       },
@@ -44,7 +44,7 @@
         "verify": "verify7.sh"
       },
       {
-        "title": "Reflection: when is this worth it?",
+        "title": "Reflection: is it worth it?",
         "text": "step8.md"
       }
     ],

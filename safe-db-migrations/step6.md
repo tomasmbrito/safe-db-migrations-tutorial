@@ -1,6 +1,6 @@
 # Contract: remove what nobody uses
 
-**Step 3, contract:** drop the trigger and the old column, and make sure `full_name` is always filled from now on. A first attempt:
+Last part, contract: drop the trigger and the old column, and make sure `full_name` is always filled from now on. First attempt:
 
 ```
 cat > db/migrations/20261004000000_contract_drop_name.sql <<'SQL'
@@ -25,14 +25,14 @@ SQL
 ./ci.sh
 ```{{exec}}
 
-Two things to notice.
+A couple of things here.
 
-**The `squawk-ignore` comment.** Dropping a column is normally forbidden by the `ban-drop-column` rule, because it breaks anyone still reading it. Here we *know* nobody reads it, since v1 was stopped in the previous step. The comment records that decision in the migration itself, where reviewers can see it. A gate that cannot be overridden on purpose is a gate people learn to bypass.
+The `squawk-ignore` comment: dropping a column is normally blocked by the `ban-drop-column` rule, because it breaks anyone still reading it. Here we know nobody reads it, since we stopped v1 in the last step. The comment writes that decision down in the migration itself, where reviewers can see it. If a check can't be overridden on purpose, people just end up finding ways around it.
 
-**The pipeline is still blocked.** `SET NOT NULL` makes PostgreSQL scan the whole table to check every row, while holding an `ACCESS EXCLUSIVE` lock that blocks reads and writes. On 200,000 rows that is short; on 200 million it is an outage. The safe version splits it in two:
+The pipeline is still blocked, though. `SET NOT NULL` makes PostgreSQL scan the whole table while holding an `ACCESS EXCLUSIVE` lock, so reads and writes are blocked the whole time. With 200,000 rows that's quick, with 200 million it's an outage. The safe way splits it in two:
 
-1. add a `CHECK` constraint marked `NOT VALID`: instant, it only applies to new rows;
-2. `VALIDATE` it in a separate migration: it scans the table, but with a light lock that lets reads and writes continue.
+1. add a `CHECK` constraint marked `NOT VALID`, which is instant and only applies to new rows
+2. `VALIDATE` it in a separate migration, which scans the table but with a light lock, so reads and writes keep going
 
 ```
 cat > db/migrations/20261004000000_contract_drop_name.sql <<'SQL'
@@ -72,11 +72,11 @@ SQL
 ./ci.sh
 ```{{exec}}
 
-The pipeline passes. dbmate runs each file in its own transaction, so the two steps really are separate. The users never noticed:
+Now it passes. dbmate runs each file in its own transaction, so the two steps really are separate. And the users didn't notice a thing:
 
 ```
 sleep 2; ./status.sh
 psql "$DATABASE_URL" -c '\d users'
 ```{{exec}}
 
-The rename is done: three deploys instead of one, and zero failed requests.
+The rename is done: three deploys instead of one, and not a single failed request.
