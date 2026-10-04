@@ -1,0 +1,3 @@
+pg_version = "16.0"
+# dbmate wraps each migration in a transaction by default
+assume_in_transaction = true
