@@ -2,7 +2,7 @@
 
 An executable tutorial for DD2482 Automated Software Testing and DevOps (KTH, 2026).
 
-**Run it in the browser:** https://killercoda.com/TODO
+**Run it in the browser:** https://killercoda.com/tomasmbrito/scenario/safe-db-migrations
 
 You break a live service with a one-line schema migration, add a migration linter as a gate in a small CI/CD pipeline, and then rename the column again with the expand/contract pattern while traffic keeps flowing, without a single failed request.
 
