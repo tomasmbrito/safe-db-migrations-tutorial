@@ -33,3 +33,7 @@ All tool versions are pinned in `safe-db-migrations/background.sh`. No accounts 
 ## Authors
 
 Tomás Brito (tmldjb@kth.se) and Cesar Aceves Hernández (cesarah@kth.se)
+
+## Use of AI
+
+We chose the topic and the tools, and we reviewed, edited and tested every step ourselves, both locally and on Killercoda. We used an AI assistant to help draft parts of the text, the scripts and the diagrams.
