@@ -1,6 +1,6 @@
 # Reflection: is it worth it?
 
-We renamed one column with five migrations and two app deploys instead of one line, and added a check that sometimes blocks a change. That has a cost, so it's worth asking when the extra safety pays off.
+We renamed one column with three migrations, a backfill and a rolling deploy instead of one line, and added a check that sometimes blocks a change. That has a cost, so it's worth asking when the extra safety pays off.
 
 ## Why these tools
 
