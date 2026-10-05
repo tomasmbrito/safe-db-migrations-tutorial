@@ -2,10 +2,10 @@
 
 Say a new feature lists the newest customers, so we need an index on `created_at`. An index doesn't change any column, so no app version can break. Can it still hurt production?
 
-A normal `CREATE INDEX` holds a `SHARE` lock on the table for the whole build: reads keep working, but every write waits until the index is done. Our table is small enough that the build takes a fraction of a second, so we fake a big table by keeping the transaction open for 8 seconds:
+A normal `CREATE INDEX` holds a `SHARE` lock on the table for the whole build: reads keep working, but every write waits until the index is done. Our table is small enough that the build takes a fraction of a second, so we fake a big table by keeping the transaction open for 20 seconds:
 
 ```
-psql "$DATABASE_URL" -qc "BEGIN; CREATE INDEX users_created_at_idx ON users (created_at); SELECT pg_sleep(8); ROLLBACK;" &
+psql "$DATABASE_URL" -qc "BEGIN; CREATE INDEX users_created_at_idx ON users (created_at); SELECT pg_sleep(20); ROLLBACK;" &
 sleep 6; ./status.sh
 ```{{exec}}
 
@@ -15,7 +15,7 @@ Only the `POST` requests fail, after hitting the app's 2 second timeout. The `GE
 psql "$DATABASE_URL" -c "SELECT pid, wait_event_type, left(query, 50) AS query FROM pg_stat_activity WHERE wait_event_type = 'Lock'"
 ```{{exec}}
 
-(If the list is empty the 8 seconds were already over, just run both commands again.)
+If the list is empty, the 20 seconds were already over. Run both commands again.
 
 What would the pipeline say? Let's write the obvious migration:
 
