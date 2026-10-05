@@ -1,6 +1,6 @@
 # Done
 
-You changed the schema of a live service three times without a single failed request.
+You renamed a column and added an index on a live service, and neither change made a single request fail.
 
 Quick recap:
 
